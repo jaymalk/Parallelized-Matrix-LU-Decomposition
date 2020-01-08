@@ -1,0 +1,10 @@
+# Mac
+*.DS_Store*
+
+# Binaries
+*a.out*
+
+# VSCode
+*vscode*
+
+
