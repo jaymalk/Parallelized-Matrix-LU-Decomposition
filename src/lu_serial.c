@@ -5,7 +5,6 @@
 #include "lu_serial.h"
 
 
-
 /*
  * The LU Decomposition Function. (LOWER)
  * @param a_ (double **): input array (COPY)
@@ -15,7 +14,7 @@
  * 
  * NOTE: Copy of matrix (a_) must be passed as it gets overwritten.
  */
-void __lu_decomposition_serial(double ** a_, double **l_, double **u_, double *p_, int size) {
+void __lu_decomposition(double ** a_, double **l_, double **u_, double *p_, int size) {
 
     // local vars
     double max; int kf;
@@ -72,7 +71,7 @@ void __init_2d(double *** mat_, int N_) {
  * @param (double ***): matrix references
  * @param N (int): order of matrices
  */
-void serial_init(double *** m_, double *** l_, double *** u_, double **p_, int N) {
+void init(double *** m_, double *** l_, double *** u_, double **p_, int N) {
     // 2D init
     {
         __init_2d(m_, N);

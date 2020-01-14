@@ -1,8 +1,7 @@
 
 
-
-#ifndef __LU_SERIAL
-#define __LU_SERIAL
+#ifndef __LU_PTHREADS
+#define __LU_PTHREADS
 
 
 /*
@@ -18,7 +17,7 @@ void __lu_decomposition(double **, double **, double **, double *, int size);
 
 
 /*
- * 2D Matrix (Square), serial initialisations.
+ * 2D Matrix (Square), parallel initialisations.
  * @param (double ***): reference to 2D array
  * @param (int): order of the matrix
  */
@@ -26,7 +25,7 @@ void __init_2d(double ***, int);
 
 
 /*
- * Complete initialisations of matrices involved.
+ * Complete initialisations of matrices involved (parallely).
  * @param (double ***): matrix references
  * @param (int): order of matrices
  */
@@ -34,10 +33,10 @@ void init(double ***, double ***, double ***, double **, int);
 
 
 /*
- * Matrix serial write
+ * Parallel write for matrix using pthreads
  * @param (double **): matrix to write
  */
 void write_matrix(double **);
 
 
-#endif /* __LU_SERIAL */
+#endif /* __LU_PTHREADS */
