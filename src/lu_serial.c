@@ -35,6 +35,9 @@ void __lu_decomposition(double ** a_, double **l_, double **u_, double *p_, int 
 
         // swapping
         swap_d(p_+k, p_+kf);
+        swap_d_r(a_+k, a_+kf);
+        swap_d_r(a_+k, a_+kf);
+    
         for(int i=0; i<size; i++)
             swap_d(a_[k]+i, a_[kf]+i);
         for(int i=0; i<k; i++)
@@ -102,4 +105,15 @@ void init(double *** m_, double *** l_, double *** u_, double **p_, int N) {
             }
         }
     }
+}
+
+
+int main(int argc, char const *argv[])
+{
+    int N = atoi(argv[1]);
+    double **m, **l, **u, *p;
+    init(&m, &l, &u, &p, N);
+    __lu_decomposition(m, l, u, p, N);
+    _print_sq(m, N, 2);
+    return 0;
 }

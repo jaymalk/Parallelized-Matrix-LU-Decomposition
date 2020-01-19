@@ -37,9 +37,9 @@ void __lu_decomposition(double ** a_, double **l_, double **u_, double *p_, int 
 
         // swapping
         swap_d(p_+k, p_+kf);
-#       pragma omp parallel for
-        for(int i=0; i<size; i++)
-            swap_d(a_[k]+i, a_[kf]+i);
+        swap_d_r(a_+k, a_+kf);
+        swap_d_r(a_+k, a_+kf);
+    
 #       pragma omp parallel for
         for(int i=0; i<k; i++)
             swap_d(l_[k]+i, l_[kf]+i);

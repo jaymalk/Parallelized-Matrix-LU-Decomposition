@@ -10,6 +10,12 @@
  */
 void swap_d(double *, double *);
 
+/*
+ * Swapping double pointed rows.
+ * @param _1, _2 (double **)
+ */
+void swap_d_r(double **, double **);
+
 
 /*
  * Ordered printing of a square-matrix.

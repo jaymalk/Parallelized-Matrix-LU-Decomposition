@@ -15,4 +15,10 @@
 #include <omp.h>
 #include <pthread.h>
 
+
+/*
+ * Default file access permissions for new files.
+ */
+#define	FILE_MODE	(S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)
+
 #endif

@@ -33,10 +33,5 @@ void __init_2d(double ***, int);
 void init(double ***, double ***, double ***, double **, int);
 
 
-/*
- * Parallel write for matrix using openmp
- * @param (double **): matrix to write
- */
-void write_matrix(double **);
 
 #endif /* __LU_OMP */

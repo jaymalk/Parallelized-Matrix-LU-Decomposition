@@ -33,11 +33,5 @@ void __init_2d(double ***, int);
 void init(double ***, double ***, double ***, double **, int);
 
 
-/*
- * Matrix serial write
- * @param (double **): matrix to write
- */
-void write_matrix(double **);
-
 
 #endif /* __LU_SERIAL */
