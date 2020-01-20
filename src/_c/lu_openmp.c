@@ -123,8 +123,10 @@ int main(int argc, char const *argv[])
 {
     int N = atoi(argv[1]);
     double **m, **l, **u, *p;
+    double t = omp_get_wtime();
     init(&m, &l, &u, &p, N);
     __lu_decomposition(m, l, u, p, N);
-    _print_sq(l, N, 2);
+    printf("%lf\n", omp_get_wtime() - t);
+    // _print_sq(l, N, 2);
     return 0;
 }
