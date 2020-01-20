@@ -1,8 +1,10 @@
 
+
 #include "include.h"
 #include "commons.h"
 
-#include "lu_serial.h"
+#include "lu_openmp.h"
+
 
 
 /*
@@ -36,49 +38,55 @@ void __lu_decomposition(double ** a_, double **l_, double **u_, double *p_, int 
         // swapping
         swap_d(p_+k, p_+kf);
         swap_d_r(a_+k, a_+kf);
-        swap_d_r(a_+k, a_+kf);
     
-        for(int i=0; i<size; i++)
-            swap_d(a_[k]+i, a_[kf]+i);
+#       pragma omp parallel for
         for(int i=0; i<k; i++)
             swap_d(l_[k]+i, l_[kf]+i);
         
         // setting values
         u_[k][k] = a_[k][k];
+#       pragma omp parallel for
         for(int i=k+1; i<size; i++) {
             l_[i][k] = a_[i][k]/u_[k][k];
             u_[k][i] = a_[k][i];
         }
-        for(int i=k+1; i<size; i++)
+#       pragma omp parallel for
+        for(int i=k+1; i<size; i++) {
+#           pragma omp parallel for
             for(int j=k+1; j<size; j++)
                 a_[i][j] -= (l_[i][k]*u_[k][j]);
+        }
     }
 }
 
 
 /*
- * 2D Matrix (Square), serial initialisations.
- * @param mat_ (double ***): reference to 2D array
- * @param N_ (int): order of the matrix
+ * 2D Matrix (Square), parallel initialisations.
+ * @param (double ***): reference to 2D array
+ * @param (int): order of the matrix
  */
-void __init_2d(double *** mat_, int N_) {
-    // 2d-init
-    *mat_ = (double **)malloc(sizeof(double *)*N_);
-    // 1d-init
-    for(int i=0; i<N_; i++)
-        (*mat_)[i] = (double *)malloc(sizeof(double)*N_);
+void __init_2d(double *** _m, int _sze) {
+    (*_m) = (double **)malloc(sizeof(double *)*_sze);
+#   pragma omp parallel for
+    for(int i=0; i<_sze; i++)
+        (*_m)[i] = (double *)malloc(sizeof(double)*_sze);
 }
 
+
 /*
- * Complete initialisations of matrices involved.
+ * Complete initialisations of matrices involved (parallely).
  * @param (double ***): matrix references
- * @param N (int): order of matrices
+ * @param (int): order of matrices
  */
 void init(double *** m_, double *** l_, double *** u_, double **p_, int N) {
     // 2D init
+#   pragma omp parallel sections
     {
+#       pragma omp section
         __init_2d(m_, N);
+#       pragma omp section
         __init_2d(l_, N);
+#       pragma omp section
         __init_2d(u_, N);
     }
 
@@ -86,9 +94,11 @@ void init(double *** m_, double *** l_, double *** u_, double **p_, int N) {
     (*p_) = (double *)malloc(sizeof(double)*N);
 
     // filling
+#   pragma omp parallel for
     for(int i=0; i<N; i++) {
         // perm.matrix
         (*p_)[i] = i;
+#       pragma omp parallel for
         for(int j=0; j<N; j++) {
             // matrix
             (*m_)[i][j] = drand48();
@@ -108,12 +118,13 @@ void init(double *** m_, double *** l_, double *** u_, double **p_, int N) {
 }
 
 
+
 int main(int argc, char const *argv[])
 {
     int N = atoi(argv[1]);
     double **m, **l, **u, *p;
     init(&m, &l, &u, &p, N);
     __lu_decomposition(m, l, u, p, N);
-    _print_sq(m, N, 2);
+    _print_sq(l, N, 2);
     return 0;
 }

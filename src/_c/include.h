@@ -15,6 +15,12 @@
 #include <omp.h>
 #include <pthread.h>
 
+#ifdef __linux__
+#define      __stderrp stderr
+#define      __stdoutp stdout
+#define      __stdinp  stdin
+#endif
+
 
 /*
  * Default file access permissions for new files.
