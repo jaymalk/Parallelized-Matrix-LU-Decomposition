@@ -5,7 +5,7 @@
 
 using namespace std;
 
-
+int no_of_threads = 1;
 /*
  * The LU Decomposition Function. (LOWER)
  * @param a_ (MAT): input array (COPY)
@@ -35,19 +35,19 @@ void __lu_decomposition(MAT a_, MAT& l_, MAT& u_, std::vector<int>& p_) {
         swap(p_[k], p_[kf]);
         swap(a_[k], a_[kf]);
 
-#       pragma omp parallel for    
+#       pragma omp parallel for num_threads(no_of_threads)   
         for(int i=0; i<k; i++)
             swap(l_[k][i], l_[kf][i]);
         
         // setting values
         u_[k][k] = a_[k][k];
-#       pragma omp parallel for
+#       pragma omp parallel for num_threads(no_of_threads)
         for(int i=k+1; i<size; i++) {
             l_[i][k] = a_[i][k]/u_[k][k];
             u_[k][i] = a_[k][i];
         }
 
-#       pragma omp parallel for
+#       pragma omp parallel for num_threads(no_of_threads)
         for(int i=k+1; i<size; i++)
 #           pragma omp parallel for
             for(int j=k+1; j<size; j++)
@@ -63,7 +63,7 @@ void __lu_decomposition(MAT a_, MAT& l_, MAT& u_, std::vector<int>& p_) {
 void init(MAT& m_, MAT& l_, MAT& u_, std::vector<int>& p_, int _size) {
     
     // Initialisations
-#   pragma omp parallel sections
+#   pragma omp parallel sections num_threads(4)
     {
 #       pragma omp section
         m_ = vector<vector<double>>(_size, vector<double>(_size, 0));
@@ -76,7 +76,7 @@ void init(MAT& m_, MAT& l_, MAT& u_, std::vector<int>& p_, int _size) {
     }
 
     // Fillings
-#   pragma omp parallel for
+#   pragma omp parallel for num_threads(no_of_threads)
     for(int i=0; i<_size; i++) {
         // permutation
         p_[i] = i;
@@ -100,12 +100,13 @@ void init(MAT& m_, MAT& l_, MAT& u_, std::vector<int>& p_, int _size) {
 int main(int argc, char const *argv[])
 {
     int N = stoi(argv[1]);
+    no_of_threads = stoi(argv[2]);
     MAT m, l, u;
     vector<int> p;
     double t = omp_get_wtime();
     init(m, l, u, p, N);
     printf("Initialization %lf\n", omp_get_wtime() - t);
-    double t = omp_get_wtime();
+    t = omp_get_wtime();
     // __print(m);
     __lu_decomposition(m, l, u, p);
     printf("%lf\n", omp_get_wtime() - t);
