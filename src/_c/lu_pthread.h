@@ -3,7 +3,7 @@
 #ifndef __LU_PTHREADS
 #define __LU_PTHREADS
 
-
+#include <pthread.h>
 /*
  * The LU Decomposition Function. (LOWER)
  * @param a_ (double **): input array (COPY)
@@ -13,15 +13,14 @@
  * 
  * NOTE: Copy of matrix (a_) must be passed as it gets overwritten.
  */
-void __lu_decomposition(double **, double **, double **, double *, int size);
-
+void *__lu_decomposition(void * arguments);
 
 /*
  * 2D Matrix (Square), parallel initialisations.
  * @param (double ***): reference to 2D array
  * @param (int): order of the matrix
  */
-void __init_2d(double ***, int);
+void *__init_2d(void *arguments);
 
 
 /*

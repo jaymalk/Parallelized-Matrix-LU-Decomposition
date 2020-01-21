@@ -1,9 +1,13 @@
-
-#include "include.h"
 #include "commons.h"
+#include "lu_pthread.h"
 
-#include "lu_serial.h"
+int no_of_threads = 1;
+double **m, **l, **u, *p;
 
+struct init_arg_struct {
+    double ** mat;
+    int size;
+};
 
 /*
  * The LU Decomposition Function. (LOWER)
@@ -14,7 +18,7 @@
  * 
  * NOTE: Copy of matrix (a_) must be passed as it gets overwritten.
  */
-void __lu_decomposition(double ** a_, double **l_, double **u_, double *p_, int size) {
+void *__lu_decomposition(int size) {
 
     // local vars
     double max; int kf;
@@ -23,8 +27,8 @@ void __lu_decomposition(double ** a_, double **l_, double **u_, double *p_, int 
     for(int k = 0; k < size; k++) {
         max = 0;
         for(int i=k; i<size; i++) {
-            if(max < fabs(a_[i][k])) {
-                max = fabs(a_[i][k]);
+            if(max < fabs(m[i][k])) {
+                max = fabs(m[i][k]);
                 kf = i;
             }
         }
@@ -34,83 +38,110 @@ void __lu_decomposition(double ** a_, double **l_, double **u_, double *p_, int 
         }
 
         // swapping
-        swap_d(p_+k, p_+kf);
-        swap_d_r(a_+k, a_+kf);
+        swap_d(p+k, p+kf);
+        swap_d_r(m+k, m+kf);
     
+#       pragma omp parallel for num_threads(no_of_threads)
         for(int i=0; i<k; i++)
-            swap_d(l_[k]+i, l_[kf]+i);
+            swap_d(l[k]+i, l[kf]+i);
         
         // setting values
-        u_[k][k] = a_[k][k];
+        u[k][k] = m[k][k];
+#       pragma omp parallel for num_threads(no_of_threads)
         for(int i=k+1; i<size; i++) {
-            l_[i][k] = a_[i][k]/u_[k][k];
-            u_[k][i] = a_[k][i];
+            l[i][k] = m[i][k]/u[k][k];
+            u[k][i] = m[k][i];
         }
-        for(int i=k+1; i<size; i++)
+#       pragma omp parallel for num_threads(no_of_threads)
+        for(int i=k+1; i<size; i++) {
+#           pragma omp parallel for
             for(int j=k+1; j<size; j++)
-                a_[i][j] -= (l_[i][k]*u_[k][j]);
+                m[i][j] -= (l[i][k]*u[k][j]);
+        }
     }
 }
 
 
 /*
- * 2D Matrix (Square), serial initialisations.
- * @param mat_ (double ***): reference to 2D array
- * @param N_ (int): order of the matrix
+ * 2D Matrix (Square), parallel initialisations.
+ * @param (double ***): reference to 2D array
+ * @param (int): order of the matrix
  */
-void __init_2d(double *** mat_, int N_) {
-    // 2d-init
-    *mat_ = (double **)malloc(sizeof(double *)*N_);
-    // 1d-init
-    for(int i=0; i<N_; i++)
-        (*mat_)[i] = (double *)malloc(sizeof(double)*N_);
+void *__init_2d(void *arguments) {
+
+    struct init_arg_struct *args = (struct init_arg_struct *)arguments;
+    double ** _m = args->mat;
+    int _sze = args->size;
+    (_m) = (double **)malloc(sizeof(double *)*_sze);
+#   pragma omp parallel for num_threads(no_of_threads)
+    for(int i=0; i<_sze; i++)
+        (_m)[i] = (double *)malloc(sizeof(double)*_sze);
 }
 
+
 /*
- * Complete initialisations of matrices involved.
+ * Complete initialisations of matrices involved (parallely).
  * @param (double ***): matrix references
- * @param N (int): order of matrices
+ * @param (int): order of matrices
  */
-void init(double *** m_, double *** l_, double *** u_, double **p_, int N) {
+void init(int N) {
     // 2D init
+    pthread_t init_thread_id[3];
     {
-        __init_2d(m_, N);
-        __init_2d(l_, N);
-        __init_2d(u_, N);
+        struct init_arg_struct args;
+        args.size = N;
+        args.mat = m;
+        pthread_create( &init_thread_id[0], NULL, &__init_2d, (void *)&args);
+        
+        args.mat = l;
+        pthread_create( &init_thread_id[1], NULL, &__init_2d, (void *)&args);
+        
+        args.mat = u;
+        pthread_create( &init_thread_id[2], NULL, &__init_2d, (void *)&args);
+        
     }
 
     // 1D init
-    (*p_) = (double *)malloc(sizeof(double)*N);
+    (p) = (double *)malloc(sizeof(double)*N);
 
     // filling
+#   pragma omp parallel for num_threads(no_of_threads)
     for(int i=0; i<N; i++) {
         // perm.matrix
-        (*p_)[i] = i;
+        (p)[i] = i;
+#       pragma omp parallel for
         for(int j=0; j<N; j++) {
             // matrix
-            (*m_)[i][j] = drand48();
+            (m)[i][j] = drand48();
             // u & l (conditional)
             if(i == j) {
-                (*l_)[i][j] = 1;
-                (*u_)[i][j] = 1;
+                (l)[i][j] = 1;
+                (u)[i][j] = 1;
             }
             else if (i > j) {
-                (*l_)[i][j] = 1;
+                (l)[i][j] = 1;
             }
             else {
-                (*u_)[i][j] = 1;
+                (u)[i][j] = 1;
             }
         }
     }
 }
+
 
 
 int main(int argc, char const *argv[])
 {
     int N = atoi(argv[1]);
-    double **m, **l, **u, *p;
-    init(&m, &l, &u, &p, N);
-    __lu_decomposition(m, l, u, p, N);
-    _print_sq(l, N, 2);
+    no_of_threads = atoi(argv[2]);
+    
+    double t = omp_get_wtime();
+    init(N);
+    printf("Initialization %lf\n", omp_get_wtime() - t);
+    
+    t = omp_get_wtime();
+    __lu_decomposition(N);
+    printf("%lf\n", omp_get_wtime() - t);
+    // _print_sq(l, N, 2);
     return 0;
 }

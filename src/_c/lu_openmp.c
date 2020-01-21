@@ -1,6 +1,3 @@
-
-
-#include "include.h"
 #include "commons.h"
 
 #include "lu_openmp.h"
