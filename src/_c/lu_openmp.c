@@ -127,6 +127,10 @@ int main(int argc, char const *argv[])
     t = omp_get_wtime();
     __lu_decomposition(m, l, u, p, N);
     printf("%lf\n", omp_get_wtime() - t);
+    free(m);
+    free(l);
+    free(u);
+    free(p);
     // _print_sq(l, N, 2);
     return 0;
 }
