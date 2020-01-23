@@ -2,10 +2,10 @@
 #include "lu_pthread.h"
 
 int no_of_threads = 1;
-double **m, **l, **u, *p;
+double ***m, ***l, ***u, **p;
 
 typedef struct init_arg_struct {
-    double ** mat;
+    double *** mat;
     int size;
 }init_arg_struct;
 
@@ -17,7 +17,7 @@ struct loop_arg {
 };
 
 struct init_loop_arg{
-    double **mat;
+    double ***mat;
     int start;
     int end;
     int size;
@@ -44,8 +44,8 @@ void __lu_decomposition(int size) {
     for(int k = 0; k < size; k++) {
         max = 0;
         for(int i=k; i<size; i++) {
-            if(max < fabs(m[i][k])) {
-                max = fabs(m[i][k]);
+            if(max < fabs(*m[i][k])) {
+                max = fabs(*m[i][k]);
                 kf = i;
             }
         }
@@ -55,8 +55,8 @@ void __lu_decomposition(int size) {
         }
 
         // swapping
-        swap_d(p+k, p+kf);
-        swap_d_r(m+k, m+kf);
+        swap_d(*p+k, *p+kf);
+        swap_d_r(*m+k, *m+kf);
 
         pthread_t thread_id[no_of_threads];
         struct loop_arg args;
@@ -80,7 +80,7 @@ void __lu_decomposition(int size) {
             pthread_join( thread_id[j], NULL);
         
         // setting values
-        u[k][k] = m[k][k];
+        *u[k][k] = *m[k][k];
 
         args.extra1 = k;
         start_loop = k+1;
@@ -128,9 +128,9 @@ void __lu_decomposition(int size) {
 void *threaded_alloc(void *arguments);
 void *__init_2d(void *arguments) {
     struct init_arg_struct *args = (struct init_arg_struct*)arguments;
-    double ** m = args->mat;
+    double *** m = args->mat;
     int size = args->size;
-    (m) = (double **)malloc(sizeof(double *)*size);
+    (*m) = (double **)malloc(sizeof(double *)*size);
 
     pthread_t thread_id[no_of_threads];
 
