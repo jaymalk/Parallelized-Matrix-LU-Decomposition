@@ -15,7 +15,7 @@
  * 
  * NOTE: Copy of matrix (a_) must be passed as it gets overwritten.
  */
-void __lu_decomposition(double **, double **, double **, double *, int size);
+void __lu_decomposition(double **, double **, double **, int *, int size);
 
 
 /*
@@ -31,7 +31,7 @@ void __init_2d(double ***, int);
  * @param (double ***): matrix references
  * @param (int): order of matrices
  */
-void init(double ***, double ***, double ***, double **, int);
+void init(double ***, double ***, double ***, double ***, int **, int);
 
 
 

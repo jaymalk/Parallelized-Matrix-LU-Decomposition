@@ -115,9 +115,9 @@ int main(int argc, char const *argv[])
     // cout << endl;
     // __print(u);
     // cout << endl;
-    // __print_permute(m, p);
-    // cout << endl;
-    // MAT x = __matmul(l, u);
-    // __print(x);
+    __print_permute(m, p);
+    cout << endl;
+    MAT x = __matmul(l, u);
+    __print(x);
     return 0;
 }
