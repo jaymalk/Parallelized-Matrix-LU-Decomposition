@@ -78,6 +78,7 @@ void __print_permute(double ** _mat, int * _p, int sze, int _fd) {
  * NOTE: Both matrices are assumed to be square and of the same order.
  */
 void __matmul(double ** _1, double ** _2, double ** result, int size) {
+    printf("Multiplying Matrix\n");
     for(int i=0; i<size; i++)
         for(int j=0; j<size; j++){
 

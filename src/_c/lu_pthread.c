@@ -2,8 +2,8 @@
 #include "lu_pthread.h"
 
 int no_of_threads = 1;
-double **m, **l, **u;
-double *p;
+double **m, **mcopy, **l, **u;
+int *p;
 
 typedef struct init_arg_struct {
     double *** mat;
@@ -56,67 +56,73 @@ void __lu_decomposition(int size) {
         }
 
         // swapping
-        swap_d(p+k, p+kf);
+        swap_i(p+k, p+kf);
         swap_d_r(m+k, m+kf);
 
-        pthread_t thread_id[no_of_threads];
-        struct loop_arg args;
-        args.extra1 = k;
-        args.extra2 = kf;
+        pthread_t swap_l_thread_id[no_of_threads];
         
         int start_loop = 0;
         int end_loop = k;
         int gap = k/no_of_threads;
         for(int i=0;i<no_of_threads;i++){
-            args.start = start_loop + i*gap;
+            struct loop_arg *args = (struct loop_arg *)malloc(sizeof(struct loop_arg));
+            args->extra1 = k;
+            args->extra2 = kf;
+            args->start = start_loop + i*gap;
             if(i==no_of_threads-1)
-                args.end = end_loop;
+                args->end = end_loop;
             else
-                args.end = start_loop+gap;
+                args->end = start_loop+gap;
 
-            pthread_create( &thread_id[i], NULL, &swap_l, (void *)&args);
+            pthread_create( &swap_l_thread_id[i], NULL, &swap_l, (void *)args);
         }
 
         for(int j=0; j < no_of_threads; j++)
-            pthread_join( thread_id[j], NULL);
+            pthread_join( swap_l_thread_id[j], NULL);
         
         // setting values
         u[k][k] = m[k][k];
 
-        args.extra1 = k;
+        pthread_t lu_thread_id[no_of_threads];
+
         start_loop = k+1;
         end_loop = size;
         gap = (size-k-1)/no_of_threads;
         for(int i=0;i<no_of_threads;i++){
-            args.start = start_loop + i*gap;
+            struct loop_arg *args = (struct loop_arg *)malloc(sizeof(struct loop_arg));
+            args->extra1 = k;
+            args->start = start_loop + i*gap;
             if(i==no_of_threads-1)
-                args.end = end_loop;
+                args->end = end_loop;
             else
-                args.end = start_loop+gap;
+                args->end = start_loop+gap;
 
-            pthread_create( &thread_id[i], NULL, &lu, (void *)&args);
+            pthread_create( &lu_thread_id[i], NULL, &lu, (void *)args);
         }
 
         for(int j=0; j < no_of_threads; j++)
-            pthread_join( thread_id[j], NULL);
+            pthread_join( lu_thread_id[j], NULL);
         
-        args.extra1 = k;
-        args.extra2 = size;
+
+        pthread_t mlu_thread_id[no_of_threads];
         start_loop = k+1;
         end_loop = size;
         gap = (size-k-1)/no_of_threads;
         for(int i=0;i<no_of_threads;i++){
-            args.start = start_loop + i*gap;
+            struct loop_arg *args = (struct loop_arg *)malloc(sizeof(struct loop_arg));
+            args->extra1 = k;
+            args->extra2 = size;
+            args->start = start_loop + i*gap;
             if(i==no_of_threads-1)
-                args.end = end_loop;
+                args->end = end_loop;
             else
-                args.end = start_loop+gap;
+                args->end = start_loop+gap;
 
-            pthread_create( &thread_id[i], NULL, &mlu, (void *)&args);
+            pthread_create( &mlu_thread_id[i], NULL, &mlu, (void *)args);
         }
 
         for(int j=0; j < no_of_threads; j++)
-            pthread_join( thread_id[j], NULL);
+            pthread_join( mlu_thread_id[j], NULL);
     }
 }
 
@@ -167,7 +173,7 @@ void *threaded_init(void *arguments);
 void init(int N) {
     // 2D init
     pthread_t* init_thread_id;
-    init_thread_id = malloc(3*sizeof(pthread_t));
+    init_thread_id = malloc(4*sizeof(pthread_t));
     {
         struct init_arg_struct *args_m = (struct init_arg_struct *)malloc(sizeof(struct init_arg_struct));
         args_m->size = N;
@@ -175,24 +181,30 @@ void init(int N) {
         pthread_create( &init_thread_id[0], NULL, &__init_2d, (void *)args_m);
         // printf("Done allocating memory to m\n");
         
+
+        struct init_arg_struct *args_mcopy = (struct init_arg_struct *)malloc(sizeof(struct init_arg_struct));
+        args_mcopy->size = N;
+        args_mcopy->mat = &mcopy;
+        pthread_create( &init_thread_id[1], NULL, &__init_2d, (void *)args_mcopy);
+
         struct init_arg_struct *args_l = (struct init_arg_struct *)malloc(sizeof(struct init_arg_struct));
         args_l->size = N;
         args_l->mat = &l;
-        pthread_create( &init_thread_id[1], NULL, &__init_2d, (void *)args_l);
+        pthread_create( &init_thread_id[2], NULL, &__init_2d, (void *)args_l);
         // printf("Done allocating memory to l\n");
         
         struct init_arg_struct *args_u = (struct init_arg_struct *)malloc(sizeof(struct init_arg_struct));
         args_u->size = N;
         args_u->mat = &u;
-        pthread_create( &init_thread_id[2], NULL, &__init_2d, (void *)args_u);
+        pthread_create( &init_thread_id[3], NULL, &__init_2d, (void *)args_u);
         // printf("Done allocating memory to u\n");
     }
     // printf("Going to join threads\n");
-    for(int j=0; j < 3; j++)
+    for(int j=0; j < 4; j++)
         pthread_join( init_thread_id[j], NULL);
     // printf("Joined threads\n");
     // 1D init
-    p = (double *)malloc(sizeof(double) * N);
+    p = (int *)malloc(sizeof(int) * N);
 
     // printf("Done allocating memory to p\n");
 
@@ -234,20 +246,37 @@ int main(int argc, char const *argv[])
     init(N);
     printf("Ending Init\n");
     // printf("Initialization %lf\n", omp_get_wtime() - t);
+    // _print_sq(m,N,2);
+    // write(2, "\n", 1);
+    // _print_sq(l,N,2);
+    // write(2, "\n", 1);
+    // _print_sq(u,N,2);
     
+    write(2, "M\n ", 2);
+    _print_sq(m,N,2);
+    write(2, "\n", 1);
+    // write(2, "Mcopy \n", 8);
+    // _print_sq(mcopy,N,2);
+
     // t = omp_get_wtime();
     printf("Beginning LU\n");
     __lu_decomposition(N);
     printf("Ending LU\n");
+
+
     // printf("%lf\n", omp_get_wtime() - t);
     
-    // double ** result;
+    double ** result;
+    (result) = (double **)malloc(sizeof(double *)*N);
+// #   pragma omp parallel for num_threads(no_of_threads)
+    for(int i=0; i<N; i++)
+        (result)[i] = (double *)malloc(sizeof(double)*N);
 
-    // __print_permute(mcopy, p, N, 2);
-    // write(2, "\n", 1);
-    // __matmul(l, u, result, N);
+    __print_permute(mcopy, p, N, 2);
+    write(2, "\n", 1);
+    __matmul(l, u, result, N);
 
-    // printf("%16.12lf \n",checker(,result,p,N, 2));
+    printf("%16.12lf \n",checker(mcopy,result,p,N, 2));
     
 
     return 0;
@@ -303,6 +332,7 @@ void *threaded_init(void *arguments){
             // matrix
             // printf("Updating m %d %d\n",i,j);
             m[i][j] = drand48();
+            mcopy[i][j] = m[i][j];
             // printf("Updated m\n");
             // u & l (conditional)
             if(i == j) {

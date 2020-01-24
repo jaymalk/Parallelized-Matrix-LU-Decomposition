@@ -47,6 +47,7 @@ void __lu_decomposition(double ** a_, double **l_, double **u_, int *p_, int siz
             l_[i][k] = a_[i][k]/u_[k][k];
             u_[k][i] = a_[k][i];
         }
+
 #       pragma omp parallel for num_threads(no_of_threads)
         for(int i=k+1; i<size; i++) {
 #           pragma omp parallel for
@@ -128,18 +129,30 @@ int main(int argc, char const *argv[])
     double t = omp_get_wtime();
     init(&m, &mcopy, &l, &u, &p, N);
     printf("Initialization %lf\n", omp_get_wtime() - t);
+
+    // _print_sq(m,N,2);
+    // write(2, "\n", 1);
+    // _print_sq(l,N,2);
+    // write(2, "\n", 1);
+    // _print_sq(u,N,2);
+
     t = omp_get_wtime();
     __lu_decomposition(m, l, u, p, N);
     printf("%lf\n", omp_get_wtime() - t);
 
 
-    double ** result;
-    __init_2d(&result, N);
+    _print_sq(l,N,2);
+    write(2, "\n", 1);
+    _print_sq(u,N,2);
 
-    // __print_permute(mcopy, p, N, 2);
-    // write(2, "\n", 1);
-    __matmul(l, u, result, N);
+    // double ** result;
+    // __init_2d(&result, N);
 
-    printf("%16.12lf \n",checker(mcopy,result,p,N, 2));
+    
+    // // __print_permute(mcopy, p, N, 2);
+    // // write(2, "\n", 1);
+    // __matmul(l, u, result, N);
+
+    // printf("%16.12lf \n",checker(mcopy,result,p,N, 2));
     return 0;
 }
