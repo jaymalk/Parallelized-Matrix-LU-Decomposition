@@ -72,7 +72,7 @@ void __lu_decomposition(int size) {
             if(i==no_of_threads-1)
                 args->end = end_loop;
             else
-                args->end = start_loop+gap;
+                args->end = args->start+gap;
 
             pthread_create( &swap_l_thread_id[i], NULL, &swap_l, (void *)args);
         }
@@ -95,8 +95,8 @@ void __lu_decomposition(int size) {
             if(i==no_of_threads-1)
                 args->end = end_loop;
             else
-                args->end = start_loop+gap;
-
+                args->end = args->start+gap;
+            
             pthread_create( &lu_thread_id[i], NULL, &lu, (void *)args);
         }
 
@@ -116,7 +116,7 @@ void __lu_decomposition(int size) {
             if(i==no_of_threads-1)
                 args->end = end_loop;
             else
-                args->end = start_loop+gap;
+                args->end = args->start+gap;
 
             pthread_create( &mlu_thread_id[i], NULL, &mlu, (void *)args);
         }
@@ -252,9 +252,9 @@ int main(int argc, char const *argv[])
     // write(2, "\n", 1);
     // _print_sq(u,N,2);
     
-    write(2, "M\n ", 2);
-    _print_sq(m,N,2);
-    write(2, "\n", 1);
+    // write(2, "M\n ", 2);
+    // _print_sq(m,N,2);
+    // write(2, "\n", 1);
     // write(2, "Mcopy \n", 8);
     // _print_sq(mcopy,N,2);
 
@@ -272,8 +272,8 @@ int main(int argc, char const *argv[])
     for(int i=0; i<N; i++)
         (result)[i] = (double *)malloc(sizeof(double)*N);
 
-    __print_permute(mcopy, p, N, 2);
-    write(2, "\n", 1);
+    // __print_permute(mcopy, p, N, 2);
+    // write(2, "\n", 1);
     __matmul(l, u, result, N);
 
     printf("%16.12lf \n",checker(mcopy,result,p,N, 2));
