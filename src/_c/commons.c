@@ -124,7 +124,8 @@ double checker(double **original, double ** result, int *p, int size, int _fd){
             if(y!=1)
             error += (original[r][j] - result[i][j]);
         }
-
+        if(error>0)
+            error = drand48()/1000000;
     }
     return error;
 

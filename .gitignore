@@ -1,6 +1,7 @@
 # Mac
 *.DS_Store*
-
+omp
+pthread
 *.fuse*
 # Binaries
 *a.out*

@@ -255,16 +255,12 @@ int main(int argc, char const *argv[])
     
     //Computing time for Initializing the matrices
     double t = omp_get_wtime();
-    printf("Beginning Init\n");
     init(N);
-    printf("Ending Init\n");
-    ("Time taken for Initialization is %lf\n", omp_get_wtime() - t);
+    printf("Time taken for Initialization is %lf\n", omp_get_wtime() - t);
 
     //Start counting time for LU decomposition
     t = omp_get_wtime();
-    printf("Beginning LU\n");
     __lu_decomposition(N);
-    printf("Ending LU\n");
     printf("Time taken for LU Decomposition is %lf\n", omp_get_wtime() - t);
     
     //To check if you want to compute norm or not.
