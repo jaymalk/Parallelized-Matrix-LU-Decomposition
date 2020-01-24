@@ -1,6 +1,7 @@
 # Mac
 *.DS_Store*
 
+*.fuse*
 # Binaries
 *a.out*
 

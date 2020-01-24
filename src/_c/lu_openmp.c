@@ -42,17 +42,20 @@ void __lu_decomposition(double ** a_, double **l_, double **u_, int *p_, int siz
         
         // setting values
         u_[k][k] = a_[k][k];
+        double temp = u_[k][k];
 #       pragma omp parallel for num_threads(no_of_threads)
         for(int i=k+1; i<size; i++) {
-            l_[i][k] = a_[i][k]/u_[k][k];
+            l_[i][k] = a_[i][k]/temp;
             u_[k][i] = a_[k][i];
         }
 
+        double *temp_u = u_[k];
 #       pragma omp parallel for num_threads(no_of_threads)
         for(int i=k+1; i<size; i++) {
-#           pragma omp parallel for
+            double temp_li = l_[i][k];
+#       pragma omp parallel for
             for(int j=k+1; j<size; j++)
-                a_[i][j] -= (l_[i][k]*u_[k][j]);
+                a_[i][j] -= (temp_li*temp_u[j]);
         }
     }
 }
@@ -78,7 +81,7 @@ void __init_2d(double *** _m, int _sze) {
  */
 void init(double *** m_, double ***mcopy, double *** l_, double *** u_, int **p_, int N) {
     // 2D init
-#   pragma omp parallel sections num_threads(3)
+#   pragma omp parallel sections num_threads(4)
     {
 #       pragma omp section
         __init_2d(m_, N);
@@ -94,11 +97,12 @@ void init(double *** m_, double ***mcopy, double *** l_, double *** u_, int **p_
     (*p_) = (int *)malloc(sizeof(int)*N);
 
     // filling
+
 #   pragma omp parallel for num_threads(no_of_threads)
     for(int i=0; i<N; i++) {
         // perm.matrix
-        (*p_)[i] = i;
-#       pragma omp parallel for
+    (*p_)[i] = i;
+#   pragma omp parallel for
         for(int j=0; j<N; j++) {
             // matrix
             (*m_)[i][j] = drand48();
@@ -141,9 +145,9 @@ int main(int argc, char const *argv[])
     printf("%lf\n", omp_get_wtime() - t);
 
 
-    _print_sq(l,N,2);
-    write(2, "\n", 1);
-    _print_sq(u,N,2);
+    // _print_sq(l,N,2);
+    // write(2, "\n", 1);
+    // _print_sq(u,N,2);
 
     // double ** result;
     // __init_2d(&result, N);

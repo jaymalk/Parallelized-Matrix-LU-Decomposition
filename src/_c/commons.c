@@ -46,10 +46,10 @@ void _print_sq(double **_mat, int _sze, int _fd) {
     char *s = (char *)malloc(10);
     for(int i=0; i<_sze; i++) {
         for(int j=0; j<_sze; j++) {
-            sprintf(s, "%16.12lf", _mat[i][j]);
-            write(_fd, s, 10);
+            // sprintf(s, "%16.12lf", _mat[i][j]);
+            // write(_fd, s, 10);
         }
-        write(_fd, "\n", 1);
+        // write(_fd, "\n", 1);
     }
 }
 
@@ -64,10 +64,10 @@ void __print_permute(double ** _mat, int * _p, int sze, int _fd) {
     for(int i=0; i<sze; i++) {
         r = _p[i];
         for(int j=0; j<sze; j++) {
-            sprintf(s, "%16.12lf", _mat[r][j]);
-            write(_fd, s, 10);
+            // sprintf(s, "%16.12lf", _mat[r][j]);
+            // write(_fd, s, 10);
         }
-        write(_fd, "\n", 1);
+        // write(_fd, "\n", 1);
     }
 }
 
