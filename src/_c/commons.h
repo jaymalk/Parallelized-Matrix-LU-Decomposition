@@ -35,18 +35,29 @@ void _print_sq(double **, int, int);
 
 /*
  * Ordered printing of a square-matrix, keeping in mind the permutation.
- * @param _mat (vector<vector<double>>): matrix
+ * @param _mat (double **): matrix
+ * @param _p(int *): permutation vector
+ * @param sze(int): Size of square matrices and vector
+ * @param _fd(int): File descriptor
  */
 void __print_permute(double ** _mat, int * _p, int sze, int _fd);
 
 
 /*
  * Standard Matrix Multiplication.
- * @param (std::vector<std::vector<double>>&, std::vector<std::vector<double>>&): matrices involved
- * 
+ * @param _1, _2(double **): matrices involved
+ * @param result(double **): result stored in this matrix
+ * @param size(int): Size of the square matrices involved
  * NOTE: Both matrices are assumed to be square and of the same order.
  */
 void __matmul(double ** _1, double ** _2, double ** result, int size);
 
-double checker(double **original, double ** result, int *p, int size, int);
+/*
+ * Standard Matrix Multiplication.
+ * @param original, result(double **): matrices involved
+ * @param result(double **): result stored in this matrix
+ * @param size(int): Size of the square matrices involved
+ * NOTE: Both matrices are assumed to be square and of the same order.
+ */
+double checker(double **original, double ** result, int *p, int size, int _fd);
 #endif /* __COM */

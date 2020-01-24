@@ -16,7 +16,7 @@ void swap_d(double * _1, double * _2) {
 
 /*
  * Swapping int pointed values.
- * @param _1, _2 (double *)
+ * @param _1, _2 (int *)
  */
 void swap_i(int * _1, int * _2) {
     int _t = *_1;
@@ -46,17 +46,21 @@ void _print_sq(double **_mat, int _sze, int _fd) {
     char *s = (char *)malloc(10);
     for(int i=0; i<_sze; i++) {
         for(int j=0; j<_sze; j++) {
-            // sprintf(s, "%16.12lf", _mat[i][j]);
-            // write(_fd, s, 10);
+            sprintf(s, "%16.12lf", _mat[i][j]);
+            write(_fd, s, 10);
         }
-        // write(_fd, "\n", 1);
+        write(_fd, "\n", 1);
     }
+    write(_fd,"\n", 1);
 }
 
 
 /*
  * Ordered printing of a square-matrix, keeping in mind the permutation.
- * @param _mat (vector<vector<double>>): matrix
+ * @param _mat (double **): matrix
+ * @param _p(int *): permutation vector
+ * @param sze(int): Size of square matrices and vector
+ * @param _fd(int): File descriptor
  */
 void __print_permute(double ** _mat, int * _p, int sze, int _fd) {
     int r;
@@ -64,37 +68,41 @@ void __print_permute(double ** _mat, int * _p, int sze, int _fd) {
     for(int i=0; i<sze; i++) {
         r = _p[i];
         for(int j=0; j<sze; j++) {
-            // sprintf(s, "%16.12lf", _mat[r][j]);
-            // write(_fd, s, 10);
+            sprintf(s, "%16.12lf", _mat[r][j]);
+            write(_fd, s, 10);
         }
-        // write(_fd, "\n", 1);
+        write(_fd, "\n", 1);
     }
+    write(_fd,"\n", 1);
 }
 
 /*
  * Standard Matrix Multiplication.
- * @param (std::vector<std::vector<double>>&, std::vector<std::vector<double>>&): matrices involved
- * 
+ * @param _1, _2(double **): matrices involved
+ * @param result(double **): result stored in this matrix
+ * @param size(int): Size of the square matrices involved
  * NOTE: Both matrices are assumed to be square and of the same order.
  */
 void __matmul(double ** _1, double ** _2, double ** result, int size) {
     printf("Multiplying Matrix\n");
     for(int i=0; i<size; i++)
-        for(int j=0; j<size; j++){
-
-            if(isnan(_1[i][j]))
-                printf("L matrix %d %d \n",i,j);
-            if(isnan(_2[i][j]))
-                printf("U matrix %d %d \n",i,j);
-            
+        for(int j=0; j<size; j++){           
             double temp = 0.0;
             for(int k=0; k<size; k++){
                 temp += (_1[i][k] * _2[k][j]);
             }
             result[i][j] = temp;
         }
+    printf("Matrix multiplication done\n");
 }
 
+/*
+ * Standard Matrix Multiplication.
+ * @param original, result(double **): matrices involved
+ * @param result(double **): result stored in this matrix
+ * @param size(int): Size of the square matrices involved
+ * NOTE: Both matrices are assumed to be square and of the same order.
+ */
 double checker(double **original, double ** result, int *p, int size, int _fd){
     double error = 0.0;
     int r;
@@ -103,8 +111,6 @@ double checker(double **original, double ** result, int *p, int size, int _fd){
         r=p[i];
         for(int j=0; j<size; j++){
 
-            // sprintf(s, "%16.12lf",(original[r][j] - result[i][j]));
-            // write(_fd, s, 10);
             int y = 0;
             if(isnan(original[r][j])){
                 printf("original matrix %d %d \n",r,j);
@@ -119,7 +125,6 @@ double checker(double **original, double ** result, int *p, int size, int _fd){
             error += (original[r][j] - result[i][j]);
         }
 
-        // write(_fd, "\n", 1);
     }
     return error;
 

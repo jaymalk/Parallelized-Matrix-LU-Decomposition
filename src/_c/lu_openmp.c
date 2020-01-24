@@ -36,8 +36,10 @@ void __lu_decomposition(double ** a_, double **l_, double **u_, int *p_, int siz
         // swapping
         swap_i(p_+k, p_+kf);
         swap_d_r(a_+k, a_+kf);
-        // setting row pointers
+
+        // setting row pointers to improve cache coherence
         _r1 = l_[k], _r2 = l_[kf];
+        //parallelising the for loop involved in swapping values of l[k] and l[kf] rows
 #       pragma omp parallel for
         for(int i=0; i<k; i++)
             swap_d(_r1 + i, _r2 + i);
@@ -45,18 +47,22 @@ void __lu_decomposition(double ** a_, double **l_, double **u_, int *p_, int siz
         // setting values
         u_[k][k] = a_[k][k];
         double _v = u_[k][k];
-        // setting row pointers
+        
+        // setting row pointers to improve cache coherence
         _r1 = u_[k], _r2 = a_[k];
+        //parallelising the for loop involved in computing values of l and u matrices
 #       pragma omp parallel for
         for(int i=k+1; i<size; i++) {
             _temp[i] = l_[i][k] = a_[i][k]/_v;
             _r1[i] = _r2[i];
         }
 
+        // setting row pointer to improve cache coherence
         _r1 = u_[k];
+        //parallelising the for loop involved in computing values ofmatrix a
 #       pragma omp parallel for
         for(int i=k+1; i<size; i++) {
-            _v = _temp[i];
+            _v = _temp[i];         // row pointer to improve cache coherence
 #       pragma omp parallel for
             for(int j=k+1; j<size; j++)
                 a_[i][j] -= (_v*_r1[j]);
@@ -130,16 +136,40 @@ void init(double *** m_, double ***mcopy, double *** l_, double *** u_, int **p_
 
 int main(int argc, char const *argv[])
 {
+    //Extract parameters
     int N = atoi(argv[1]);
     int num_threads = atoi(argv[2]);
+    
+    //Set number of threads
     omp_set_num_threads(num_threads);
+    
+    //Matrices involved
     double **m, **mcopy, **l, **u;
     int *p;
+    
+    //Computing time for Initializing the matrices
     double t = omp_get_wtime();
     init(&m, &mcopy, &l, &u, &p, N);
-    printf("Initialization %lf\n", omp_get_wtime() - t);
+    printf("Time taken for Initialization %lf\n", omp_get_wtime() - t);
+    
+    //Start counting time for LU decomposition
     t = omp_get_wtime();
     __lu_decomposition(m, l, u, p, N);
-    printf("%lf\n", omp_get_wtime() - t);
+    printf("Time taken for LU Decomposition %lf\n", omp_get_wtime() - t);
+
+    //To check if you want to compute norm or not.
+    int check = 0;
+    if(argc>3) 
+        check = atoi(argv[3]);
+    if(check == 1){
+        //Store Result of L*U
+        double ** result;
+        __init_2d(&result, N);
+
+        //Matrix multiplication
+        __matmul(l,u,result,N);
+
+        printf("The L(2,1) norm is: %lf \n", checker(mcopy, result, p, N, 2));
+    }
     return 0;
 }

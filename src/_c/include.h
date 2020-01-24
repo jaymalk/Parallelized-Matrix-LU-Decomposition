@@ -12,6 +12,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdarg.h>
+#include <omp.h>
+#include <pthread.h>
 
 #ifdef __linux__
 #define      __stderrp stderr

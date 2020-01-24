@@ -4,8 +4,6 @@
 #ifndef __LU_OMP
 #define __LU_OMP
 
-
-#include <omp.h>
 /*
  * The LU Decomposition Function. (LOWER)
  * @param a_ (double **): input array (COPY)

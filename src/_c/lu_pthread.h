@@ -26,21 +26,23 @@ void *__init_2d(void *);
 
 /*
  * Complete initialisations of matrices involved (parallely).
- * @param (double ***): matrix references
  * @param (int): order of matrices
  */
 void init(int);
 
-
-/*
- * Parallel write for matrix using pthreads
- * @param (double **): matrix to write
- */
-
+//Pointer function for pthread to swap values of l[k] and l[k']
 void *swap_l(void *);
+
+//Pointer function for pthread to compute values of l and u
 void *lu(void *);
+
+//Pointer function for pthread to compute values of matrix a
 void *mlu(void *);
-void *threaded_alloc(void *);
+
+//Pointer function for pthread to randomly initialize the matrices
 void *threaded_init(void *);
+
+//Pointer function for pthread to allocate memory to each row
+void *threaded_alloc(void *);
 
 #endif /* __LU_PTHREADS */
