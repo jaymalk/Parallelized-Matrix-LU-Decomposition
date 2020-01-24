@@ -2,8 +2,6 @@
 
 #include "lu_openmp.h"
 
-int no_of_threads = 1;
-
 /*
  * The LU Decomposition Function. (LOWER)
  * @param a_ (double **): input array (COPY)
@@ -17,6 +15,9 @@ void __lu_decomposition(double ** a_, double **l_, double **u_, int *p_, int siz
 
     // local vars
     double max; int kf;
+
+    // local row pointers
+    double *_r1, *_r2, _v, *_temp = (double *)malloc(sizeof(double)*size);
 
     // basic loop (row-wise)
     for(int k = 0; k < size; k++) {
@@ -35,27 +36,30 @@ void __lu_decomposition(double ** a_, double **l_, double **u_, int *p_, int siz
         // swapping
         swap_i(p_+k, p_+kf);
         swap_d_r(a_+k, a_+kf);
-    
-#       pragma omp parallel for num_threads(no_of_threads)
+        // setting row pointers
+        _r1 = l_[k], _r2 = l_[kf];
+#       pragma omp parallel for
         for(int i=0; i<k; i++)
-            swap_d(l_[k]+i, l_[kf]+i);
+            swap_d(_r1 + i, _r2 + i);
         
         // setting values
         u_[k][k] = a_[k][k];
-        double temp = u_[k][k];
-#       pragma omp parallel for num_threads(no_of_threads)
+        double _v = u_[k][k];
+        // setting row pointers
+        _r1 = u_[k], _r2 = a_[k];
+#       pragma omp parallel for
         for(int i=k+1; i<size; i++) {
-            l_[i][k] = a_[i][k]/temp;
-            u_[k][i] = a_[k][i];
+            _temp[i] = l_[i][k] = a_[i][k]/_v;
+            _r1[i] = _r2[i];
         }
 
-        double *temp_u = u_[k];
-#       pragma omp parallel for num_threads(no_of_threads)
+        _r1 = u_[k];
+#       pragma omp parallel for
         for(int i=k+1; i<size; i++) {
-            double temp_li = l_[i][k];
+            _v = _temp[i];
 #       pragma omp parallel for
             for(int j=k+1; j<size; j++)
-                a_[i][j] -= (temp_li*temp_u[j]);
+                a_[i][j] -= (_v*_r1[j]);
         }
     }
 }
@@ -68,7 +72,7 @@ void __lu_decomposition(double ** a_, double **l_, double **u_, int *p_, int siz
  */
 void __init_2d(double *** _m, int _sze) {
     (*_m) = (double **)malloc(sizeof(double *)*_sze);
-#   pragma omp parallel for num_threads(no_of_threads)
+#   pragma omp parallel for
     for(int i=0; i<_sze; i++)
         (*_m)[i] = (double *)malloc(sizeof(double)*_sze);
 }
@@ -81,7 +85,7 @@ void __init_2d(double *** _m, int _sze) {
  */
 void init(double *** m_, double ***mcopy, double *** l_, double *** u_, int **p_, int N) {
     // 2D init
-#   pragma omp parallel sections num_threads(4)
+#   pragma omp parallel sections
     {
 #       pragma omp section
         __init_2d(m_, N);
@@ -98,7 +102,7 @@ void init(double *** m_, double ***mcopy, double *** l_, double *** u_, int **p_
 
     // filling
 
-#   pragma omp parallel for num_threads(no_of_threads)
+#   pragma omp parallel for
     for(int i=0; i<N; i++) {
         // perm.matrix
     (*p_)[i] = i;
@@ -127,36 +131,15 @@ void init(double *** m_, double ***mcopy, double *** l_, double *** u_, int **p_
 int main(int argc, char const *argv[])
 {
     int N = atoi(argv[1]);
-    no_of_threads = atoi(argv[2]);
+    int num_threads = atoi(argv[2]);
+    omp_set_num_threads(num_threads);
     double **m, **mcopy, **l, **u;
     int *p;
     double t = omp_get_wtime();
     init(&m, &mcopy, &l, &u, &p, N);
     printf("Initialization %lf\n", omp_get_wtime() - t);
-
-    // _print_sq(m,N,2);
-    // write(2, "\n", 1);
-    // _print_sq(l,N,2);
-    // write(2, "\n", 1);
-    // _print_sq(u,N,2);
-
     t = omp_get_wtime();
     __lu_decomposition(m, l, u, p, N);
     printf("%lf\n", omp_get_wtime() - t);
-
-
-    // _print_sq(l,N,2);
-    // write(2, "\n", 1);
-    // _print_sq(u,N,2);
-
-    // double ** result;
-    // __init_2d(&result, N);
-
-    
-    // // __print_permute(mcopy, p, N, 2);
-    // // write(2, "\n", 1);
-    // __matmul(l, u, result, N);
-
-    // printf("%16.12lf \n",checker(mcopy,result,p,N, 2));
     return 0;
 }
