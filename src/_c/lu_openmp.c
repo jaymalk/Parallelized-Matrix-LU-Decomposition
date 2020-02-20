@@ -62,10 +62,10 @@ void __lu_decomposition(double ** a_, double **l_, double **u_, int *p_, int siz
         //parallelising the for loop involved in computing values ofmatrix a
 #       pragma omp parallel for
         for(int i=k+1; i<size; i++) {
-            _v = _temp[i];         // row pointer to improve cache coherence
+            double _val = _temp[i];         // row pointer to improve cache coherence
 #       pragma omp parallel for
             for(int j=k+1; j<size; j++)
-                a_[i][j] -= (_v*_r1[j]);
+                a_[i][j] -= (_val*_r1[j]);
         }
     }
 }
@@ -151,25 +151,22 @@ int main(int argc, char const *argv[])
     double t = omp_get_wtime();
     init(&m, &mcopy, &l, &u, &p, N);
     printf("Time taken for Initialization %lf\n", omp_get_wtime() - t);
+
+    // Reading the matrices from the file
+    read_matrix(argv[3], m, N);
+    read_matrix(argv[3], mcopy, N);
     
-    //Start counting time for LU decomposition
+    //Start counting time for LU decomposition, m now redundant
     t = omp_get_wtime();
     __lu_decomposition(m, l, u, p, N);
     printf("Time taken for LU Decomposition %lf\n", omp_get_wtime() - t);
 
-    //To check if you want to compute norm or not.
-    int check = 0;
-    if(argc>3) 
-        check = atoi(argv[3]);
-    if(check == 1){
-        //Store Result of L*U
-        double ** result;
-        __init_2d(&result, N);
-
-        //Matrix multiplication
-        __matmul(l,u,result,N);
-
-        printf("The L(2,1) norm is: %lf \n", checker(mcopy, result, p, N, 2));
-    }
+    // Matrix multiplication
+    __matmul(l,u,m,N);
+    // Calculating norm
+    printf("The L(2,1) norm is: %lf \n", checker(mcopy, m, p, N, 2));
+    // Writing l and u
+    write_matrix("L.txt", l, N);
+    write_matrix("U.txt", u, N);
     return 0;
 }

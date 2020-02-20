@@ -256,30 +256,24 @@ int main(int argc, char const *argv[])
     //Computing time for Initializing the matrices
     double t = omp_get_wtime();
     init(N);
-    printf("Time taken for Initialization is %lf\n", omp_get_wtime() - t);
+    printf("Time taken for Initialization %lf\n", omp_get_wtime() - t);
 
-    //Start counting time for LU decomposition
+    // Reading the matrices from the file
+    read_matrix(argv[3], m, N);
+    read_matrix(argv[3], mcopy, N);
+    
+    //Start counting time for LU decomposition, m now redundant
     t = omp_get_wtime();
     __lu_decomposition(N);
-    printf("Time taken for LU Decomposition is %lf\n", omp_get_wtime() - t);
-    
-    //To check if you want to compute norm or not.
-    int check = 0;
-    if(argc>3) 
-        check = atoi(argv[3]);
-    if(check == 1){
-        //Store Result of L*U
-        double ** result;
-        (result) = (double **)malloc(sizeof(double *)*N);
-        for(int i=0; i<N; i++)
-            (result)[i] = (double *)malloc(sizeof(double)*N);
+    printf("Time taken for LU Decomposition %lf\n", omp_get_wtime() - t);
 
-        //Matrix multiplication
-        __matmul(l,u,result,N);
-
-        printf("The L(2,1) norm is: %lf \n", checker(mcopy, result, p, N, 2));
-    }
-
+    // Matrix multiplication
+    __matmul(l,u,m,N);
+    // Calculating norm
+    printf("The L(2,1) norm is: %lf \n", checker(mcopy, m, p, N, 2));
+    // Writing l and u
+    write_matrix("L.txt", l, N);
+    write_matrix("U.txt", u, N);
     return 0;
 }
 

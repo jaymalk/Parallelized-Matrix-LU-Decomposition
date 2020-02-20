@@ -106,27 +106,52 @@ void __matmul(double ** _1, double ** _2, double ** result, int size) {
 double checker(double **original, double ** result, int *p, int size, int _fd){
     double error = 0.0;
     int r;
-    char *s = (char *)malloc(10);
     for(int i=0; i<size; i++){
         r=p[i];
-        for(int j=0; j<size; j++){
-
-            int y = 0;
-            if(isnan(original[r][j])){
-                printf("original matrix %d %d \n",r,j);
-                y=1;
-            }
-            
-            if(isnan(result[i][j])){
-                printf("Result %d %d \n",i,j);
-                y=1;
-            }
-            if(y!=1)
-            error += (original[r][j] - result[i][j]);
-        }
-        if(error>0)
-            error = drand48()/1000000;
+        for(int j=0; j<size; j++)
+            error += (original[r][j] - result[i][j])*(original[r][j] - result[i][j]);
     }
     return error;
+}
 
+
+/*
+ * Reading the matrix
+ */
+void read_matrix(const char * filename, double ** matrix, int size) {
+    // Opening the file
+    FILE *_file = fopen(filename, "r+");
+    // Checking for error
+    if(_file == NULL) {
+        fprintf(__stderrp, "Can't read the matrix, from the file, %s", filename);
+        exit(2);
+    }
+    // Reading the matrix array
+    for(uint16_t i=0; i<size; i++)
+        for(uint16_t j=0; j<size; j++)
+            fscanf(_file, "%lf", &(matrix[i][j]));
+    // Closing the file
+    fclose(_file);
+}
+
+
+/*
+ * Write Matrix
+ */
+void write_matrix(const char * filename, double ** matrix, int size) {
+    // Opening the file
+    FILE *_file = fopen(filename, "w+");
+    // Checking for error
+    if(_file == NULL) {
+        fprintf(__stderrp, "Can't write the matrix, to the file, %s", filename);
+        exit(2);
+    }
+    // Reading the matrix array
+    for(uint16_t i=0; i<size; i++) {
+        for(uint16_t j=0; j<size; j++)
+            fprintf(_file, "%6.2lf", matrix[i][j]);
+        fprintf(_file, "\n");
+    }
+    // Closing the file
+    fclose(_file);
 }

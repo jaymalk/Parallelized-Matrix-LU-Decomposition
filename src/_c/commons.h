@@ -60,4 +60,16 @@ void __matmul(double ** _1, double ** _2, double ** result, int size);
  * NOTE: Both matrices are assumed to be square and of the same order.
  */
 double checker(double **original, double ** result, int *p, int size, int _fd);
+
+
+/*
+ * Reading the matrix
+ */
+void read_matrix(const char * filename, double ** matrix, int size);
+
+/*
+ * Write Matrix
+ */
+void write_matrix(const char * filename, double ** matrix, int size);
+
 #endif /* __COM */
