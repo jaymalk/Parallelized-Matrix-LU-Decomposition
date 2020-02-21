@@ -24,26 +24,6 @@ void swap_d_r(double **, double **);
 
 
 /*
- * Ordered printing of a square-matrix.
- * @param _mat (double **): matrix
- * @param _sze (int): size of the matrix
- * @param _fd (file directory no.)
- * 
- * For test printing only, original write function different
- */
-void _print_sq(double **, int, int);
-
-/*
- * Ordered printing of a square-matrix, keeping in mind the permutation.
- * @param _mat (double **): matrix
- * @param _p(int *): permutation vector
- * @param sze(int): Size of square matrices and vector
- * @param _fd(int): File descriptor
- */
-void __print_permute(double ** _mat, int * _p, int sze, int _fd);
-
-
-/*
  * Standard Matrix Multiplication.
  * @param _1, _2(double **): matrices involved
  * @param result(double **): result stored in this matrix
@@ -63,13 +43,29 @@ double checker(double **original, double ** result, int *p, int size, int _fd);
 
 
 /*
- * Reading the matrix
+ * Reading a matrix from a file.
+ * @param filename (const char *): name of the file (local path)
+ * @param matrix (double **): container matrix
+ * @param size (int): matrix order
  */
 void read_matrix(const char * filename, double ** matrix, int size);
 
+
 /*
- * Write Matrix
+ * Writing a matrix to a file.
+ * @param filename (const char *): name of the file (local path)
+ * @param matrix (double **): container matrix
+ * @param size (int): matrix order
  */
 void write_matrix(const char * filename, double ** matrix, int size);
+
+
+/*
+ * Write a vector to a file.
+ * @param filename (const char *): name of the file (local path)
+ * @param matrix (int *): container vector
+ * @param size (int): matrix order
+ */
+void write_vector(const char * filename,  int * vector, int size);
 
 #endif /* __COM */

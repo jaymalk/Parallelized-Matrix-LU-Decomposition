@@ -272,8 +272,16 @@ int main(int argc, char const *argv[])
     // Calculating norm
     printf("The L(2,1) norm is: %lf \n", checker(mcopy, m, p, N, 2));
     // Writing l and u
-    write_matrix("L.txt", l, N);
-    write_matrix("U.txt", u, N);
+    // Writing l and u
+    char *_lname = (char *)malloc(20), \
+         *_uname = (char *)malloc(20), \
+         *_pname = (char *)malloc(20);
+    sprintf(_lname, "L_%d_%d.txt", N, no_of_threads);
+    sprintf(_uname, "U_%d_%d.txt", N, no_of_threads);
+    sprintf(_pname, "P_%d_%d.txt", N, no_of_threads);
+    write_matrix(_lname, l, N);
+    write_matrix(_uname, u, N);
+    write_vector(_pname, p, N);
     return 0;
 }
 
