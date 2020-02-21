@@ -3,8 +3,14 @@
 omp
 pthread
 *.fuse*
+
 # Binaries
 *a.out*
+
+# Redundant files
+*.zip
+*.txt
+*.pdf
 
 #output
 temp

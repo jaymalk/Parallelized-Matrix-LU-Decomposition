@@ -42,17 +42,17 @@ void swap_d_r(double ** _1, double ** _2) {
  * @param _sze (int): size of the matrix
  * @param _fd (file directory no.)
  */
-void _print_sq(double **_mat, int _sze, int _fd) {
-    char *s = (char *)malloc(10);
-    for(int i=0; i<_sze; i++) {
-        for(int j=0; j<_sze; j++) {
-            sprintf(s, "%16.12lf", _mat[i][j]);
-            write(_fd, s, 10);
-        }
-        write(_fd, "\n", 1);
-    }
-    write(_fd,"\n", 1);
-}
+// void _print_sq(double **_mat, int _sze, int _fd) {
+//     char *s = (char *)malloc(10);
+//     for(int i=0; i<_sze; i++) {
+//         for(int j=0; j<_sze; j++) {
+//             sprintf(s, "%16.12lf", _mat[i][j]);
+//             write(_fd, s, 10);
+//         }
+//         write(_fd, "\n", 1);
+//     }
+//     write(_fd,"\n", 1);
+// }
 
 
 /*
@@ -62,19 +62,19 @@ void _print_sq(double **_mat, int _sze, int _fd) {
  * @param sze(int): Size of square matrices and vector
  * @param _fd(int): File descriptor
  */
-void __print_permute(double ** _mat, int * _p, int sze, int _fd) {
-    int r;
-    char *s = (char *)malloc(10);
-    for(int i=0; i<sze; i++) {
-        r = _p[i];
-        for(int j=0; j<sze; j++) {
-            sprintf(s, "%16.12lf", _mat[r][j]);
-            write(_fd, s, 10);
-        }
-        write(_fd, "\n", 1);
-    }
-    write(_fd,"\n", 1);
-}
+// void __print_permute(double ** _mat, int * _p, int sze, int _fd) {
+//     int r;
+//     char *s = (char *)malloc(10);
+//     for(int i=0; i<sze; i++) {
+//         r = _p[i];
+//         for(int j=0; j<sze; j++) {
+//             sprintf(s, "%16.12lf", _mat[r][j]);
+//             write(_fd, s, 10);
+//         }
+//         write(_fd, "\n", 1);
+//     }
+//     write(_fd,"\n", 1);
+// }
 
 /*
  * Standard Matrix Multiplication.
@@ -129,7 +129,7 @@ void read_matrix(const char * filename, double ** matrix, int size) {
     // Reading the matrix array
     for(uint16_t i=0; i<size; i++)
         for(uint16_t j=0; j<size; j++)
-            fscanf(_file, "%lf", &(matrix[i][j]));
+           if ( fscanf(_file, "%lf", &(matrix[i][j])));
     // Closing the file
     fclose(_file);
 }
